@@ -3,49 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QR Code Scanner</title>
+  <title>QR Scanner Fix</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-    #reader { width: 180px; margin: 180px; }
+    body { font-family: Arial; text-align: center; padding: 20px; }
+    #reader { width: 300px; margin: auto; border: 1px solid #ccc; }
     #output { margin-top: 20px; font-size: 18px; }
   </style>
 </head>
 <body>
   <h1>QR Code Scanner</h1>
   <div id="reader"></div>
-  <div id="output">Scanned text will appear here.</div>
+  <div id="output">Scanned text will appear here</div>
 
   <script>
-    // Variable to store scanned QR code text
     let scannedText = "";
 
-    function onScanSuccess(decodedText, decodedResult) {
-      // Store scanned text in variable
-      scannedText = decodedText;
-      console.log("Scanned Text:", scannedText);
+    // Use Html5QrcodeScanner for simpler setup with auto detection
+    const scanner = new Html5QrcodeScanner(
+      "reader",
+      { fps: 10, qrbox: { width: 250, height: 250 } },
+      /* verbose= */ false
+    );
 
-      // Update HTML to show scanned text
-      document.getElementById('output').innerText = "Scanned Text: " + scannedText;
-
-      // Optional: Stop scanning after first successful scan
-      html5QrcodeScanner.clear();
-    }
-
-    function onScanError(errorMessage) {
-      // handle scan errors or ignore
-    }
-
-    // Initialize scanner
-    const html5QrcodeScanner = new Html5Qrcode("reader");
-    html5QrcodeScanner.start(
-      { facingMode: "environment" }, // Use rear camera
-      {
-        fps: 10,    // Scans per second
-        qrbox: 250  // QR scanning box size
+    scanner.render(
+      (decodedText, decodedResult) => {
+        scannedText = decodedText; // store the text
+        console.log("Scanned:", scannedText);
+        document.getElementById('output').innerText = "Scanned Text: " + scannedText;
+        // Stop scanning after first scan
+        scanner.clear().then(() => {
+          console.log("Scanner stopped");
+        }).catch(err => console.error(err));
       },
-      onScanSuccess,
-      onScanError
+      (errorMessage) => {
+        // ignore scan errors, they happen a lot
+      }
     );
   </script>
 </body>
