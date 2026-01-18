@@ -1,41 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QR Scanner Mobile</title>
-<script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
-<style>
-  body { display:flex; flex-direction:column; align-items:center; font-family:sans-serif; padding:20px; }
-  #reader { width:90vw; height:90vw; max-width:400px; max-height:400px; margin-top:20px; }
-  #result { margin-top:20px; font-weight:bold; word-break:break-word; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Scanner</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+    #reader { width: 300px; margin: auto; }
+    #output { margin-top: 20px; font-size: 18px; }
+  </style>
 </head>
 <body>
-<h1>QR Scanner</h1>
-<div id="reader"></div>
-<div id="result">Waiting for QR code...</div>
+  <h1>QR Code Scanner</h1>
+  <div id="reader"></div>
+  <div id="output">Scanned text will appear here.</div>
 
-<script>
-function onScanSuccess(decodedText) {
-  document.getElementById("result").innerText = "Scanned: " + decodedText;
-}
+  <script>
+    // Variable to store scanned QR code text
+    let scannedText = "";
 
-function onScanFailure(error) {
-  // optional logging
-}
+    function onScanSuccess(decodedText, decodedResult) {
+      // Store scanned text in variable
+      scannedText = decodedText;
+      console.log("Scanned Text:", scannedText);
 
-const scanner = new Html5Qrcode("reader");
+      // Update HTML to show scanned text
+      document.getElementById('output').innerText = "Scanned Text: " + scannedText;
 
-// start scanning with first available camera
-Html5Qrcode.getCameras().then(cameras => {
-  if(cameras && cameras.length) {
-    scanner.start(cameras[0].id, { fps: 10, qrbox: 250 }, onScanSuccess, onScanFailure)
-      .catch(err => alert("Unable to start camera: " + err));
-  } else {
-    alert("No camera found!");
-  }
-}).catch(err => alert("Camera error: " + err));
-</script>
+      // Optional: Stop scanning after first successful scan
+      html5QrcodeScanner.clear();
+    }
+
+    function onScanError(errorMessage) {
+      // handle scan errors or ignore
+    }
+
+    // Initialize scanner
+    const html5QrcodeScanner = new Html5Qrcode("reader");
+    html5QrcodeScanner.start(
+      { facingMode: "environment" }, // Use rear camera
+      {
+        fps: 10,    // Scans per second
+        qrbox: 250  // QR scanning box size
+      },
+      onScanSuccess,
+      onScanError
+    );
+  </script>
 </body>
 </html>
