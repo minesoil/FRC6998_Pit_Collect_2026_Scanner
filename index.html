@@ -1,102 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QR Code Scanner</title>
-
-  <!-- html5-qrcode library -->
-  <script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-      background: linear-gradient(to bottom right, #f0f4f8, #d9e2ec);
-    }
-    #reader {
-      width: 300px;
-      height: 300px;
-      margin-top: 20px;
-    }
-    #result {
-      margin-top: 20px;
-      font-weight: bold;
-      color: #003366;
-      word-break: break-all;
-    }
-    select {
-      margin-top: 10px;
-      padding: 5px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Scanner Mobile</title>
+<script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
+<style>
+  body { display:flex; flex-direction:column; align-items:center; font-family:sans-serif; padding:20px; }
+  #reader { width:90vw; height:90vw; max-width:400px; max-height:400px; margin-top:20px; }
+  #result { margin-top:20px; font-weight:bold; word-break:break-word; }
+</style>
 </head>
 <body>
+<h1>QR Scanner</h1>
+<div id="reader"></div>
+<div id="result">Waiting for QR code...</div>
 
-  <h1>QR Code Scanner</h1>
-  <select id="camera-select"></select>
-  <div id="reader"></div>
-  <div id="result">Scan a QR code...</div>
+<script>
+function onScanSuccess(decodedText) {
+  document.getElementById("result").innerText = "Scanned: " + decodedText;
+}
 
-  <script>
-    const resultDiv = document.getElementById("result");
-    const cameraSelect = document.getElementById("camera-select");
+function onScanFailure(error) {
+  // optional logging
+}
 
-    function onScanSuccess(decodedText) {
-      resultDiv.innerText = "Scanned QR Code: " + decodedText;
-      console.log("QR Code scanned: " + decodedText);
-    }
+const scanner = new Html5Qrcode("reader");
 
-    function onScanFailure(error) {
-      // Optional: console.log("QR scan error: ", error);
-    }
-
-    // Get available cameras
-    Html5Qrcode.getCameras().then(cameras => {
-      if (cameras && cameras.length) {
-        cameras.forEach(cam => {
-          const option = document.createElement("option");
-          option.value = cam.id;
-          option.text = cam.label || cam.id;
-          cameraSelect.appendChild(option);
-        });
-
-        // Start with first camera
-        startScanner(cameras[0].id);
-      } else {
-        alert("No camera found!");
-      }
-    }).catch(err => {
-      alert("Camera error: " + err);
-    });
-
-    let html5QrcodeScanner;
-
-    function startScanner(cameraId) {
-      if (html5QrcodeScanner) {
-        html5QrcodeScanner.stop().then(() => {
-          html5QrcodeScanner.clear();
-        }).catch(() => {});
-      }
-
-      html5QrcodeScanner = new Html5Qrcode("reader");
-      html5QrcodeScanner.start(
-        cameraId,
-        { fps: 10, qrbox: 250 },
-        onScanSuccess,
-        onScanFailure
-      ).catch(err => {
-        alert("Unable to start camera: " + err);
-      });
-    }
-
-    cameraSelect.addEventListener("change", () => {
-      startScanner(cameraSelect.value);
-    });
-  </script>
-
+// start scanning with first available camera
+Html5Qrcode.getCameras().then(cameras => {
+  if(cameras && cameras.length) {
+    scanner.start(cameras[0].id, { fps: 10, qrbox: 250 }, onScanSuccess, onScanFailure)
+      .catch(err => alert("Unable to start camera: " + err));
+  } else {
+    alert("No camera found!");
+  }
+}).catch(err => alert("Camera error: " + err));
+</script>
 </body>
 </html>
