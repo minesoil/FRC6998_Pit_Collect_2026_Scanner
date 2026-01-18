@@ -3,43 +3,57 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QR Scanner Fix</title>
+  <title>FRC QR Scanner</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
-    body { font-family: Arial; text-align: center; padding: 20px; }
-    #reader { width: 300px; margin: auto; border: 1px solid #ccc; }
-    #output { margin-top: 20px; font-size: 18px; }
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+    #qr-reader { width: 300px; margin: auto; border: 2px solid #ccc; border-radius: 12px; }
+    #scan-result { margin-top: 20px; font-size: 16px; word-break: break-word; }
+    button { padding: 10px 16px; margin-top: 20px; border-radius: 8px; border: none; background: #B87333; color: #fff; cursor: pointer; }
+    button:hover { background: #E6C08A; color:#000; }
   </style>
 </head>
 <body>
-  <h1>QR Code Scanner</h1>
-  <div id="reader"></div>
-  <div id="output">Scanned text will appear here</div>
+  <h1>FRC QR Scanner</h1>
+  <div id="qr-reader"></div>
+  <p id="scan-result">Scanned text will appear here</p>
+  <button onclick="stopScanner()">Stop Scanner</button>
 
   <script>
+    // Variable to store scanned text
     let scannedText = "";
 
-    // Use Html5QrcodeScanner for simpler setup with auto detection
-    const scanner = new Html5QrcodeScanner(
-      "reader",
-      { fps: 10, qrbox: { width: 250, height: 250 } },
-      /* verbose= */ false
+    // Initialize the scanner
+    const scanner = new Html5Qrcode("qr-reader");
+
+    function onScanSuccess(decodedText, decodedResult) {
+      scannedText = decodedText;  // Store QR code data
+      console.log("Scanned:", scannedText);
+
+      // Display scanned text on page
+      document.getElementById("scan-result").innerText = "Scanned Text: " + scannedText;
+
+      // OPTIONAL: Stop scanning after first scan
+      // scanner.clear().then(() => console.log("Scanner stopped")).catch(err => console.error(err));
+    }
+
+    function onScanError(errorMessage) {
+      // Ignore scan errors
+    }
+
+    // Start scanning using rear camera
+    scanner.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: 250 },
+      onScanSuccess,
+      onScanError
     );
 
-    scanner.render(
-      (decodedText, decodedResult) => {
-        scannedText = decodedText; // store the text
-        console.log("Scanned:", scannedText);
-        document.getElementById('output').innerText = "Scanned Text: " + scannedText;
-        // Stop scanning after first scan
-        scanner.clear().then(() => {
-          console.log("Scanner stopped");
-        }).catch(err => console.error(err));
-      },
-      (errorMessage) => {
-        // ignore scan errors, they happen a lot
-      }
-    );
+    function stopScanner() {
+      scanner.clear().then(() => {
+        alert("Scanner stopped");
+      }).catch(err => console.error(err));
+    }
   </script>
 </body>
 </html>
