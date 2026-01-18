@@ -3,68 +3,97 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FRC 6998 QR Scanner</title>
+<title>FRC 6998 – QR Scanner</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700&display=swap" rel="stylesheet">
+
 <style>
 body {
   font-family: 'Lexend', sans-serif;
   background: linear-gradient(135deg,#2B1F12,#5A3E25);
-  color: #FFF;
+  color: white;
   text-align: center;
   padding: 20px;
 }
 
-h1 { margin-bottom: 12px; }
-#reader { width: 300px; margin: 0 auto; }
-#result { background: rgba(255,255,255,0.2); padding: 15px; border-radius: 12px; margin-top: 20px; word-wrap: break-word; }
+h1 { margin-bottom: 10px; }
+
+button {
+  padding: 12px 20px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: none;
+  background: #E6C08A;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+#reader {
+  width: 320px;
+  margin: 20px auto;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+#result {
+  margin-top: 20px;
+  background: rgba(255,255,255,0.15);
+  padding: 15px;
+  border-radius: 12px;
+  text-align: left;
+  white-space: pre-wrap;
+}
 </style>
 </head>
+
 <body>
 
 <h1>FRC 6998 – QR Scanner</h1>
-<p>Point your camera at the generated QR code</p>
+<p>Tap the button, allow camera, then scan</p>
+
+<button onclick="startScanner()">Start Camera</button>
 
 <div id="reader"></div>
-<div id="result">Scanned data will appear here</div>
+<div id="result">Waiting for scan…</div>
 
-<!-- html5-qrcode library -->
 <script src="https://unpkg.com/html5-qrcode@2.3.9/html5-qrcode.min.js"></script>
+
 <script>
-const resultContainer = document.getElementById("result");
+let html5QrCode;
 
-function onScanSuccess(decodedText, decodedResult) {
-    // Display the scanned JSON in a readable way
-    try {
-        const obj = JSON.parse(decodedText);
-        resultContainer.innerHTML = `<pre>${JSON.stringify(obj, null, 2)}</pre>`;
-    } catch(e) {
-        resultContainer.textContent = "Scanned QR but data is not valid JSON: " + decodedText;
+function startScanner() {
+  const resultBox = document.getElementById("result");
+  html5QrCode = new Html5Qrcode("reader");
+
+  Html5Qrcode.getCameras().then(cameras => {
+    if (!cameras.length) {
+      resultBox.textContent = "No camera found.";
+      return;
     }
+
+    html5QrCode.start(
+      cameras[0].id,
+      {
+        fps: 10,
+        qrbox: 250
+      },
+      (decodedText) => {
+        try {
+          const data = JSON.parse(decodedText);
+          resultBox.textContent = JSON.stringify(data, null, 2);
+        } catch {
+          resultBox.textContent = decodedText;
+        }
+        html5QrCode.stop();
+      }
+    ).catch(err => {
+      resultBox.textContent = "Camera error: " + err;
+    });
+
+  }).catch(err => {
+    resultBox.textContent = "Permission denied or error: " + err;
+  });
 }
-
-// Create the scanner
-let html5QrcodeScanner = new Html5Qrcode("reader");
-
-// Request camera permission and start scanning
-Html5Qrcode.getCameras().then(cameras => {
-    if(cameras && cameras.length) {
-        const cameraId = cameras[0].id; // Use first camera
-        html5QrcodeScanner.start(
-            cameraId,
-            {
-                fps: 10,
-                qrbox: { width: 250, height: 250 }
-            },
-            onScanSuccess
-        ).catch(err => {
-            resultContainer.textContent = "Camera start error: " + err;
-        });
-    } else {
-        resultContainer.textContent = "No camera found on this device.";
-    }
-}).catch(err => {
-    resultContainer.textContent = "Camera permission denied or error: " + err;
-});
 </script>
 
 </body>
