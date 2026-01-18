@@ -4,56 +4,41 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FRC QR Scanner</title>
-  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-    #qr-reader { width: 300px; margin: auto; border: 2px solid #ccc; border-radius: 12px; }
+    body { font-family: Arial; text-align: center; padding: 20px; }
+    #qr-reader { width: 300px; margin: auto; }
     #scan-result { margin-top: 20px; font-size: 16px; word-break: break-word; }
-    button { padding: 10px 16px; margin-top: 20px; border-radius: 8px; border: none; background: #B87333; color: #fff; cursor: pointer; }
-    button:hover { background: #E6C08A; color:#000; }
   </style>
 </head>
 <body>
   <h1>FRC QR Scanner</h1>
   <div id="qr-reader"></div>
   <p id="scan-result">Scanned text will appear here</p>
-  <button onclick="stopScanner()">Stop Scanner</button>
 
   <script>
-    // Variable to store scanned text
-    let scannedText = "";
-
-    // Initialize the scanner
-    const scanner = new Html5Qrcode("qr-reader");
+    let scannedText = ""; // variable to store QR code data
 
     function onScanSuccess(decodedText, decodedResult) {
-      scannedText = decodedText;  // Store QR code data
+      scannedText = decodedText;
       console.log("Scanned:", scannedText);
-
-      // Display scanned text on page
       document.getElementById("scan-result").innerText = "Scanned Text: " + scannedText;
 
-      // OPTIONAL: Stop scanning after first scan
-      // scanner.clear().then(() => console.log("Scanner stopped")).catch(err => console.error(err));
+      // Optional: stop scanning after first QR code
+      html5QrcodeScanner.stop().then(() => console.log("Scanner stopped"));
     }
 
-    function onScanError(errorMessage) {
-      // Ignore scan errors
+    function onScanFailure(error) {
+      // ignore errors, happens if QR not detected in frame
     }
 
-    // Start scanning using rear camera
-    scanner.start(
-      { facingMode: "environment" },
+    const html5QrcodeScanner = new Html5QrcodeScanner(
+      "qr-reader",
       { fps: 10, qrbox: 250 },
-      onScanSuccess,
-      onScanError
+      false // verbose = false
     );
 
-    function stopScanner() {
-      scanner.clear().then(() => {
-        alert("Scanner stopped");
-      }).catch(err => console.error(err));
-    }
+    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
   </script>
 </body>
 </html>
