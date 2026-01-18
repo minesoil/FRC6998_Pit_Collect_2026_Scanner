@@ -1,98 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FRC 6998 – QR Scanner</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700&display=swap" rel="stylesheet">
-
-<style>
-body {
-  font-family: 'Lexend', sans-serif;
-  background: linear-gradient(135deg,#2B1F12,#5A3E25);
-  color: white;
-  text-align: center;
-  padding: 20px;
-}
-
-h1 { margin-bottom: 10px; }
-
-button {
-  padding: 12px 20px;
-  font-size: 16px;
-  border-radius: 10px;
-  border: none;
-  background: #E6C08A;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-#reader {
-  width: 320px;
-  margin: 20px auto;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-#result {
-  margin-top: 20px;
-  background: rgba(255,255,255,0.15);
-  padding: 15px;
-  border-radius: 12px;
-  text-align: left;
-  white-space: pre-wrap;
-}
-</style>
+<title>Camera Diagnostic</title>
 </head>
-
 <body>
 
-<h1>FRC 6998 – QR Scanner</h1>
-<p>Tap the button, allow camera, then scan</p>
-
-<button onclick="startScanner()">Start Camera</button>
-
-<div id="reader"></div>
-<div id="result">Waiting for scan…</div>
-
-<script src="https://unpkg.com/html5-qrcode@2.3.9/html5-qrcode.min.js"></script>
+<h2>Camera Diagnostic</h2>
+<pre id="out"></pre>
+<button onclick="test()">Test Camera</button>
 
 <script>
-let html5QrCode;
+const out = document.getElementById("out");
 
-function startScanner() {
-  const resultBox = document.getElementById("result");
-  html5QrCode = new Html5Qrcode("reader");
+out.textContent =
+  "isSecureContext: " + window.isSecureContext + "\n" +
+  "mediaDevices exists: " + !!navigator.mediaDevices + "\n" +
+  "getUserMedia exists: " + !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
 
-  Html5Qrcode.getCameras().then(cameras => {
-    if (!cameras.length) {
-      resultBox.textContent = "No camera found.";
-      return;
-    }
-
-    html5QrCode.start(
-      cameras[0].id,
-      {
-        fps: 10,
-        qrbox: 250
-      },
-      (decodedText) => {
-        try {
-          const data = JSON.parse(decodedText);
-          resultBox.textContent = JSON.stringify(data, null, 2);
-        } catch {
-          resultBox.textContent = decodedText;
-        }
-        html5QrCode.stop();
-      }
-    ).catch(err => {
-      resultBox.textContent = "Camera error: " + err;
-    });
-
-  }).catch(err => {
-    resultBox.textContent = "Permission denied or error: " + err;
-  });
+function test() {
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(() => alert("Camera ACCESS GRANTED"))
+    .catch(e => alert(e.name + " — " + e.message));
 }
 </script>
 
