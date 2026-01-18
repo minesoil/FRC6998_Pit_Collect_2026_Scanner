@@ -4,35 +4,98 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>QR Code Scanner</title>
+
+  <!-- html5-qrcode library -->
   <script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
+
   <style>
-    body { font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-    #reader { width: 300px; height: 300px; }
-    #result { margin-top: 20px; font-weight: bold; }
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      background: linear-gradient(to bottom right, #f0f4f8, #d9e2ec);
+    }
+    #reader {
+      width: 300px;
+      height: 300px;
+      margin-top: 20px;
+    }
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+      color: #003366;
+      word-break: break-all;
+    }
+    select {
+      margin-top: 10px;
+      padding: 5px;
+    }
   </style>
 </head>
 <body>
 
   <h1>QR Code Scanner</h1>
+  <select id="camera-select"></select>
   <div id="reader"></div>
   <div id="result">Scan a QR code...</div>
 
   <script>
-    function onScanSuccess(decodedText, decodedResult) {
-      // Show result
-      document.getElementById('result').innerText = "Scanned QR Code: " + decodedText;
-      console.log(`QR code scanned: ${decodedText}`);
+    const resultDiv = document.getElementById("result");
+    const cameraSelect = document.getElementById("camera-select");
+
+    function onScanSuccess(decodedText) {
+      resultDiv.innerText = "Scanned QR Code: " + decodedText;
+      console.log("QR Code scanned: " + decodedText);
     }
 
     function onScanFailure(error) {
-      // optional: handle scan failure
-      // console.warn(`QR scan error: ${error}`);
+      // Optional: console.log("QR scan error: ", error);
     }
 
-    let html5QrcodeScanner = new Html5QrcodeScanner(
-      "reader", { fps: 10, qrbox: 250 }
-    );
-    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    // Get available cameras
+    Html5Qrcode.getCameras().then(cameras => {
+      if (cameras && cameras.length) {
+        cameras.forEach(cam => {
+          const option = document.createElement("option");
+          option.value = cam.id;
+          option.text = cam.label || cam.id;
+          cameraSelect.appendChild(option);
+        });
+
+        // Start with first camera
+        startScanner(cameras[0].id);
+      } else {
+        alert("No camera found!");
+      }
+    }).catch(err => {
+      alert("Camera error: " + err);
+    });
+
+    let html5QrcodeScanner;
+
+    function startScanner(cameraId) {
+      if (html5QrcodeScanner) {
+        html5QrcodeScanner.stop().then(() => {
+          html5QrcodeScanner.clear();
+        }).catch(() => {});
+      }
+
+      html5QrcodeScanner = new Html5Qrcode("reader");
+      html5QrcodeScanner.start(
+        cameraId,
+        { fps: 10, qrbox: 250 },
+        onScanSuccess,
+        onScanFailure
+      ).catch(err => {
+        alert("Unable to start camera: " + err);
+      });
+    }
+
+    cameraSelect.addEventListener("change", () => {
+      startScanner(cameraSelect.value);
+    });
   </script>
 
 </body>
