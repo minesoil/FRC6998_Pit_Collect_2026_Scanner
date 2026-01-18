@@ -1,44 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FRC QR Scanner</title>
-  <script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
-  <style>
-    body { font-family: Arial; text-align: center; padding: 20px; }
-    #qr-reader { width: 300px; margin: auto; }
-    #scan-result { margin-top: 20px; font-size: 16px; word-break: break-word; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FRC QR Scanner</title>
+<script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
+<style>
+  body { font-family: Arial; text-align:center; padding:20px; }
+  #qr-reader { width: 300px; margin:auto; border: 2px solid #ccc; padding: 10px; }
+  #result { margin-top: 20px; font-size: 16px; word-break: break-word; }
+</style>
 </head>
 <body>
-  <h1>FRC QR Scanner</h1>
-  <div id="qr-reader"></div>
-  <p id="scan-result">Scanned text will appear here</p>
+<h1>FRC QR Scanner</h1>
+<div id="qr-reader"></div>
+<p id="result">Scanned text will appear here</p>
 
-  <script>
-    let scannedText = ""; // variable to store QR code data
+<script>
+let scannedText = ""; // variable to store QR
 
-    function onScanSuccess(decodedText, decodedResult) {
-      scannedText = decodedText;
-      console.log("Scanned:", scannedText);
-      document.getElementById("scan-result").innerText = "Scanned Text: " + scannedText;
+function onScanSuccess(decodedText, decodedResult) {
+  scannedText = decodedText;
+  document.getElementById("result").innerText = "Scanned: " + scannedText;
+  console.log("Scanned:", scannedText);
 
-      // Optional: stop scanning after first QR code
-      html5QrcodeScanner.stop().then(() => console.log("Scanner stopped"));
-    }
+  // stop scanner after first scan (optional)
+  html5QrcodeScanner.clear().then(()=>console.log("Scanner stopped"));
+}
 
-    function onScanFailure(error) {
-      // ignore errors, happens if QR not detected in frame
-    }
+function onScanFailure(error) {
+  // do nothing, ignore errors
+}
 
-    const html5QrcodeScanner = new Html5QrcodeScanner(
-      "qr-reader",
-      { fps: 10, qrbox: 250 },
-      false // verbose = false
-    );
+// Initialize scanner
+const html5QrcodeScanner = new Html5QrcodeScanner(
+  "qr-reader",
+  { fps: 10, qrbox: 250 },
+  false
+);
 
-    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-  </script>
+html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+</script>
 </body>
 </html>
