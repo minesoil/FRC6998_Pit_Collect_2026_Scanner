@@ -1,76 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Code Scanner</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FRC 6998 – Pit Collect QR Scanner</title>
 
-    <!-- Include the library from CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.4/html5-qrcode.min.js"
-            integrity="sha512-k/KAe4Yff9EUdYI5/IAHlwUswqeipP+Cp5qnrsUjTPCgl51La2/JhyyjNciztD7mWNKLSXci48m7cctATKfLlQ=="
-            crossorigin="anonymous"
-            referrerpolicy="no-referrer"></script>
+<!-- QR Scanner Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.4/html5-qrcode.min.js"
+        crossorigin="anonymous"></script>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-        #reader {
-            width: 500px;
-            margin-bottom: 20px;
-        }
-        #result {
-            font-size: 18px;
-            color: #333;
-        }
-    </style>
+<!-- Font -->
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --stone-light: #EFE6C8;
+  --stone-dark: #D8C59A;
+  --earth: #3E2F1C;
+  --clay: #B87333;
+  --highlight: #F5EEDB;
+}
+
+/* GLOBAL */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Lexend", sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  background: radial-gradient(circle at top left, var(--stone-light), var(--stone-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* MAIN CARD */
+.card {
+  width: 90%;
+  max-width: 420px;
+  background: var(--highlight);
+  border-radius: 18px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.18);
+  padding: 22px;
+  text-align: center;
+}
+
+/* HEADER */
+.card h1 {
+  color: var(--earth);
+  font-size: 1.5rem;
+  margin-bottom: 6px;
+}
+
+.card p {
+  color: #6b5a43;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+/* SCANNER */
+#reader {
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 3px solid var(--clay);
+  background: #000;
+}
+
+/* RESULT */
+#result {
+  margin-top: 14px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(184,115,51,0.12);
+  color: var(--earth);
+  font-size: 0.95rem;
+  word-break: break-word;
+}
+
+#result a {
+  color: var(--clay);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+#result a:hover {
+  text-decoration: underline;
+}
+
+/* SMALL SCREENS */
+@media (max-width: 480px) {
+  .card {
+    padding: 18px;
+  }
+}
+</style>
 </head>
+
 <body>
 
-    <h1>QR Code Scanner</h1>
+<div class="card">
+  <h1>📷 Pit Collect Scanner</h1>
+  <p>Scan a robot QR code to collect match data</p>
 
-    <!-- Where the scanner UI will appear -->
-    <div id="reader"></div>
+  <div id="reader"></div>
 
-    <!-- Where the scanned result will be shown -->
-    <div id="result">No result yet.</div>
+  <div id="result">Waiting for scan…</div>
+</div>
 
-    <script>
-        // Create a new scanner
-        const scanner = new Html5QrcodeScanner("reader", {
-            fps: 20,               // scanning frequency
-            qrbox: { width: 250, height: 250 } // size of the scanning box
-        });
+<script>
+const scanner = new Html5QrcodeScanner("reader", {
+  fps: 20,
+  qrbox: { width: 240, height: 240 }
+});
 
-        // Start scanning
-        scanner.render(onScanSuccess, onScanError);
+scanner.render(onScanSuccess, onScanError);
 
-        // Called when scan succeeds
-        function onScanSuccess(decodedText, decodedResult) {
-            document.getElementById('result').innerHTML = `
-                <h2>🎉 Scan Result:</h2>
-                <p><a href="${decodedText}" target="_blank">${decodedText}</a></p>
-            `;
+function onScanSuccess(decodedText) {
+  document.getElementById("result").innerHTML = `
+    <strong>Scan Successful</strong><br>
+    <a href="${decodedText}" target="_blank">${decodedText}</a>
+  `;
 
-            // Stop scanning and remove the camera UI
-            scanner.clear().then(() => {
-                document.getElementById('reader').remove();
-            });
-        }
+  scanner.clear().then(() => {
+    document.getElementById("reader").style.display = "none";
+  });
+}
 
-        // Called on scanning errors (optional)
-        function onScanError(error) {
-            // If you want to see errors, you can log them:
-            console.warn(error);
-        }
-    </script>
+function onScanError(error) {
+  // keep silent to avoid console spam
+}
+</script>
 
 </body>
 </html>
