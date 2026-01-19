@@ -20,7 +20,6 @@
   --clay: #B87333;
   --highlight: #F5EEDB;
 }
-
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Lexend", sans-serif; }
 body { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at top left, var(--stone-light), var(--stone-dark)); }
 .card { width: 90%; max-width: 420px; background: var(--highlight); border-radius: 18px; box-shadow: 0 15px 40px rgba(0,0,0,0.18); padding: 22px; text-align: center; }
@@ -46,10 +45,14 @@ body { min-height: 100vh; display: flex; align-items: center; justify-content: c
 <script>
 const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbzxEnkoVImALL6fj_8jg0ek2WVHUefQDQ1Yx5Zk-I8mdZ_rD9FfHwiWBQes6PoPN-cFBw/exec";
 
+// Original working QR code logic: treat decodedText as plain string/URL
 function onScanSuccess(decodedText) {
-  document.getElementById("result").innerHTML = `<strong>Scanned:</strong> ${decodedText}`;
+  document.getElementById("result").innerHTML = `
+    <strong>Scan Successful</strong><br>
+    <a href="${decodedText}" target="_blank">${decodedText}</a>
+  `;
 
-  // Send to Google Sheets
+  // Send data to Google Sheets
   fetch(GOOGLE_SHEET_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -60,8 +63,9 @@ function onScanSuccess(decodedText) {
   .catch(err => console.error("Error sending data:", err));
 }
 
+// Keep the scanner object the same as original working code
 function onScanError(error) {
-  // keep silent to avoid console spam
+  // Do nothing, prevents console spam
 }
 
 // Initialize scanner
