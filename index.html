@@ -1,29 +1,76 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Camera Diagnostic</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Scanner</title>
+
+    <!-- Include the library from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.4/html5-qrcode.min.js"
+            integrity="sha512-k/KAe4Yff9EUdYI5/IAHlwUswqeipP+Cp5qnrsUjTPCgl51La2/JhyyjNciztD7mWNKLSXci48m7cctATKfLlQ=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #reader {
+            width: 500px;
+            margin-bottom: 20px;
+        }
+        #result {
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
 </head>
 <body>
 
-<h2>Camera Diagnostic</h2>
-<pre id="out"></pre>
-<button onclick="test()">Test Camera</button>
+    <h1>QR Code Scanner</h1>
 
-<script>
-const out = document.getElementById("out");
+    <!-- Where the scanner UI will appear -->
+    <div id="reader"></div>
 
-out.textContent =
-  "isSecureContext: " + window.isSecureContext + "\n" +
-  "mediaDevices exists: " + !!navigator.mediaDevices + "\n" +
-  "getUserMedia exists: " + !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+    <!-- Where the scanned result will be shown -->
+    <div id="result">No result yet.</div>
 
-function test() {
-  navigator.mediaDevices.getUserMedia({ video: true })
-    .then(() => alert("Camera ACCESS GRANTED"))
-    .catch(e => alert(e.name + " — " + e.message));
-}
-</script>
+    <script>
+        // Create a new scanner
+        const scanner = new Html5QrcodeScanner("reader", {
+            fps: 20,               // scanning frequency
+            qrbox: { width: 250, height: 250 } // size of the scanning box
+        });
+
+        // Start scanning
+        scanner.render(onScanSuccess, onScanError);
+
+        // Called when scan succeeds
+        function onScanSuccess(decodedText, decodedResult) {
+            document.getElementById('result').innerHTML = `
+                <h2>🎉 Scan Result:</h2>
+                <p><a href="${decodedText}" target="_blank">${decodedText}</a></p>
+            `;
+
+            // Stop scanning and remove the camera UI
+            scanner.clear().then(() => {
+                document.getElementById('reader').remove();
+            });
+        }
+
+        // Called on scanning errors (optional)
+        function onScanError(error) {
+            // If you want to see errors, you can log them:
+            console.warn(error);
+        }
+    </script>
 
 </body>
 </html>
