@@ -3,149 +3,101 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FRC 6998 – Pit Collect QR Scanner</title>
+<title>Pit Collect Scanner</title>
 
-<!-- QR Scanner Library -->
+<!-- Html5 QR code library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.4/html5-qrcode.min.js"
-        crossorigin="anonymous"></script>
-
-<!-- Font -->
-<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700&display=swap" rel="stylesheet">
+        integrity="sha512-k/KAe4Yff9EUdYI5/IAHlwUswqeipP+Cp5qnrsUjTPCgl51La2/JhyyjNciztD7mWNKLSXci48m7cctATKfLlQ=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
 
 <style>
-:root {
-  --stone-light: #EFE6C8;
-  --stone-dark: #D8C59A;
-  --earth: #3E2F1C;
-  --clay: #B87333;
-  --highlight: #F5EEDB;
-}
-
-/* GLOBAL */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: "Lexend", sans-serif;
-}
-
-body {
-  min-height: 100vh;
-  background: radial-gradient(circle at top left, var(--stone-light), var(--stone-dark));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* MAIN CARD */
-.card {
-  width: 90%;
-  max-width: 420px;
-  background: var(--highlight);
-  border-radius: 18px;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.18);
-  padding: 22px;
-  text-align: center;
-}
-
-/* HEADER */
-.card h1 {
-  color: var(--earth);
-  font-size: 1.5rem;
-  margin-bottom: 6px;
-}
-
-.card p {
-  color: #6b5a43;
-  font-size: 0.9rem;
-  margin-bottom: 16px;
-}
-
-/* SCANNER */
-#reader {
-  width: 100%;
-  border-radius: 14px;
-  overflow: hidden;
-  border: 3px solid var(--clay);
-  background: #000;
-}
-
-/* RESULT */
-#result {
-  margin-top: 14px;
-  padding: 10px;
-  border-radius: 10px;
-  background: rgba(184,115,51,0.12);
-  color: var(--earth);
-  font-size: 0.95rem;
-  word-break: break-word;
-}
-
-#result a {
-  color: var(--clay);
-  font-weight: 600;
-  text-decoration: none;
-}
-
-#result a:hover {
-  text-decoration: underline;
-}
-
-/* SMALL SCREENS */
-@media (max-width: 480px) {
-  .card {
-    padding: 18px;
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f2e8d5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
   }
-}
+  .card {
+    background: #fff4e1;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    text-align: center;
+    width: 360px;
+  }
+  h1 {
+    margin-bottom: 0.2rem;
+    font-size: 1.5rem;
+    color: #5a381e;
+  }
+  p {
+    margin-top: 0;
+    color: #6e4f36;
+    margin-bottom: 1rem;
+  }
+  #scanner {
+    margin: 0 auto;
+    width: 300px;
+    height: 300px;
+  }
+  #status {
+    margin-top: 1rem;
+    padding: 0.5rem;
+    background: #f0e4d0;
+    border-radius: 8px;
+    color: #4b2f1c;
+  }
 </style>
 </head>
-
 <body>
 
 <div class="card">
   <h1>Pit Collect Scanner</h1>
   <p>Scan a robot QR code to collect match data</p>
-
-  <div id="reader"></div>
-
-  <div id="result">Waiting for scan…</div>
+  <div id="scanner"></div>
+  <div id="status">Waiting for scan…</div>
 </div>
 
 <script>
-const scanner = new Html5QrcodeScanner("reader", {
-  fps: 20,
-  qrbox: { width: 240, height: 240 }
-});
+  // -----------------------------
+  // CONFIG: Put your Apps Script URL here
+  // -----------------------------
+  const GOOGLE_SHEET_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
 
-scanner.render(onScanSuccess, onScanError);
+  // Called when scan succeeds
+  function onScanSuccess(decodedText) {
+    document.getElementById("status").textContent = "Scanned: " + decodedText;
 
-<script>
-const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbzxEnkoVImALL6fj_8jg0ek2WVHUefQDQ1Yx5Zk-I8mdZ_rD9FfHwiWBQes6PoPN-cFBw/exec";
-
-function onScanSuccess(decodedText) {
-  document.getElementById("result").innerHTML =
-    `<strong>Scanned:</strong> ${decodedText}`;
-
-  fetch(GOOGLE_SHEET_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      qrData: decodedText
+    // Send data to Google Sheets
+    fetch(GOOGLE_SHEET_URL, {
+      method: "POST",
+      body: JSON.stringify({ qrData: decodedText })
     })
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log("Saved to Google Sheets:", data);
-  })
-  .catch(err => {
-    console.error("Error sending data:", err);
-  });
-}
-</script>
+    .then(res => res.json())
+    .then(data => console.log("Saved to Google Sheets:", data))
+    .catch(err => console.error("Error sending data:", err));
 
+    // Optional: Stop scanning after first scan
+    html5QrcodeScanner.clear().then(() => {
+      console.log("Scanner stopped");
+    });
+  }
 
-function onScanError(error) {
-  // keep silent to avoid console spam
-}
+  // Called on scan errors (optional)
+  function onScanError(error) {
+    // keep silent
+  }
+
+  // Initialize the scanner
+  const html5QrcodeScanner = new Html5QrcodeScanner(
+    "scanner",
+    { fps: 10, qrbox: 250 }
+  );
+
+  html5QrcodeScanner.render(onScanSuccess, onScanError);
 </script>
 
 </body>
